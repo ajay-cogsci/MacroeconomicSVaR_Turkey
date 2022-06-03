@@ -15,6 +15,8 @@
 7. O(V)UPER
 
 where, 
+
+
 	O is the Year-on-Year Log changes in Global Brend Crude Oil Prices
 	U is the Year-on-Year percent changes in the Turkish Unemployement Rate
 	P is the the Year-on-Year log changes Consumer Price Index as measure of Turkish Inflation
@@ -24,8 +26,7 @@ where,
 	A is the Year-on-Year percent changes in the “Global Real Economic Activity”
 	F is the Year-on-Year percent changes in the “Wu-Xia shadow US federal rates”
 	V is the Year-on-Year percent changes in the “Chicago Global Options Exchange Volatility Index” (VIX)
-
 	D, and OS is the Year percent changes ins the global demand, and regression residuals fitted in the change in commodity change
  
- 
-
+ ### Reference Paper - 
+ Yilmazkuday, Hakan. "Drivers of Turkish inflation." The Quarterly Review of Economics and Finance 84 (2022): 315-323.
