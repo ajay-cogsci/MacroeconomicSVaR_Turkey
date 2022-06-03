@@ -1,0 +1,113 @@
+
+library(urca)
+library(vars)
+library(mFilter)
+library(tseries)
+library(TSstudio)
+library(forecast)
+library(tidyverse)
+
+#Loading the Dataset
+macro <- read_csv(file.choose())
+head(macro)
+
+
+o <- ts(macro$`OilPrice`, start = c(2005,1), frequency = 12)
+u <- ts(macro$`UnemployementRate`, start = c(2005,1), frequency = 12)
+p <- ts(macro$`CPI`, start = c(2005,1), frequency = 12)
+r <- ts(macro$`PolicyRate`, start = c(2005,1), frequency = 12)
+e <- ts(macro$`ExchangeRate`, start = c(2005,1), frequency = 12)
+
+##############################################################
+## ROBUSTNESS CHECK 4 : Wu-Xia Shadow Federal Rate YoY % change
+#################################################################
+f <- ts(macro$`WuXiaShadowFederalRate`, start = c(2005,1), frequency = 12)
+
+
+
+
+ts_plot(a, title = "Wu-Xia Shadow Federal Rate", Xtitle = "Time", Ytitle = "FedRate")
+
+
+
+
+amat <- diag(6)
+amat[2,1] <- NA
+amat[3,1] <- NA
+amat[3,2] <- NA
+amat[4,1] <- NA
+amat[4,2] <- NA
+amat[4,3] <- NA
+amat[5,1] <- NA
+amat[5,2] <- NA
+amat[5,3] <- NA
+amat[5,4] <- NA
+
+amat[6,1] <- NA
+amat[6,2] <- NA
+amat[6,3] <- NA
+amat[6,4] <- NA
+amat[6,5] <- NA
+
+
+
+b.mat <- diag(6)
+diag(b.mat) <- NA
+
+svR4 <- cbind(o,f,u,p,e,r)
+
+colnames(svR4) <- cbind("OilPrices","FederalRate", "UnemploymentRate", "InflationRate","ExchangeRate", "PolicyRate")
+plot.ts(svR4)
+
+#Max Lag - 12
+
+lagselect <- VARselect(svR4, lag.max = 10, type = "both")
+lagselect$selection
+lagselect$criteria
+
+
+Model1R4 <- VAR(svR4, p = 9, season = NULL, exog = NULL, type = "both")
+SVARMod1R4 <- SVAR(Model1R4, Amat = amat, Bmat = b.mat, hessian = TRUE, max.iter=10000)
+
+
+
+#Impulse Response Functions
+#Elasticity of Unemployement
+SVARup1R4 <- irf(SVARMod1R4, impulse = "InflationRate", response = "UnemploymentRate", cumulative = TRUE, ci = 0.68)
+SVARup2R4 <- irf(SVARMod1R4, impulse = "PolicyRate", response = "UnemploymentRate", cumulative = TRUE, ci = 0.68)
+SVARup3R4 <- irf(SVARMod1R4, impulse = "ExchangeRate", response = "UnemploymentRate", cumulative = TRUE, ci = 0.68)
+SVARup4R4 <- irf(SVARMod1R4, impulse = "OilPrices", response = "UnemploymentRate", cumulative = TRUE, ci = 0.68)
+plot(SVARup1R4)
+plot(SVARup2R4)
+plot(SVARup3R4)
+plot(SVARup4R4)
+
+
+#Elasticity of Policy Rate
+SVARpr1R4 <- irf(SVARMod1R4, impulse = "UnemploymentRate", response = "PolicyRate", cumulative = TRUE, ci = 0.68)
+SVARpr2R4 <- irf(SVARMod1R4, impulse = "InflationRate", response = "PolicyRate", cumulative = TRUE, ci = 0.68)
+SVARpr3R4 <- irf(SVARMod1R4, impulse = "ExchangeRate", response = "PolicyRate", cumulative = TRUE, ci = 0.68)
+SVARpr4R4 <- irf(SVARMod1R4, impulse = "OilPrices", response = "PolicyRate", cumulative = TRUE, ci = 0.68)
+plot(SVARpr1R4)
+plot(SVARpr2R4)
+plot(SVARpr3R4)
+plot(SVARpr4R4)
+
+
+#Elasticity of Exchange Rate
+SVARer1R4 <- irf(SVARMod1R4, impulse = "UnemploymentRate", response = "ExchangeRate", cumulative = TRUE, ci = 0.68)
+SVARer2R4 <- irf(SVARMod1R4, impulse = "InflationRate", response = "ExchangeRate", cumulative = TRUE, ci = 0.68)
+SVARer3R4 <- irf(SVARMod1R4, impulse = "PolicyRate", response = "ExchangeRate", cumulative = TRUE, ci = 0.68)
+SVARer4R4 <- irf(SVARMod1R4, impulse = "OilPrices", response = "ExchangeRate", cumulative = TRUE, ci = 0.68)
+plot(SVARer1R4)
+plot(SVARer2R4)
+plot(SVARer3R4)
+plot(SVARer4R4)
+
+
+
+
+#Forecast Error Variance Decomposition
+SVARfevdR4 <- fevd(SVARMod1R4, n.ahead = 12)
+SVARfevdR4
+
